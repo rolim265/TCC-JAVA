@@ -1,55 +1,73 @@
-package org.example; // Define o pacote do código
+package org.example;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import java.util.ArrayList;
 
-public class Tela extends JPanel implements Runnable { // Define a classe Tela que estende JPanel e implementa Runnable
-    private Personagem personagem; // Declara um objeto Personagem
-    private Image backgroundImage; // Declara um objeto Image para a imagem de fundo
-    private Fisica fisica; // Declara um objeto Fisica para lógica de física do jogo
-    private int fps; // Declara uma variável para armazenar a contagem de FPS
-    private final int chaoAltura = 150; // Declara a altura do chão, constante
+public class Tela extends JPanel implements Runnable {
+    private Personagem personagem;
+    private Image backgroundImage;
+    private Fisica fisica;
+    private int fps;
+    private final int chaoAltura = 150;
+    private ArrayList<Bloco> blocos;
 
-    public Tela() { // Construtor da classe Tela
-        // Configuração do JFrame
-        JFrame frame = new JFrame("BATMANE"); // Cria um novo JFrame com o título "BATMANE"
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Define a operação padrão para fechar o JFrame
-        frame.setSize(new Dimension(800, 600)); // Define o tamanho do JFrame
-        frame.setLocationRelativeTo(null); // Centraliza o JFrame na tela
-        frame.add(this); // Adiciona o painel atual (Tela) ao JFrame
-        frame.setVisible(true); // Torna o JFrame visível
+    public Tela() {
+        JFrame frame = new JFrame("BATMANE");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(new Dimension(800, 600));
+        frame.setLocationRelativeTo(null);
+        frame.add(this);
+        frame.setVisible(true);
 
-        // Inicializa o personagem com o caminho relativo
-        personagem = new Personagem("src/main/java/img/img_2.png", 0, 100); // Cria um novo Personagem com uma imagem e posição inicial
+        personagem = new Personagem("src/main/java/img/img_2.png", "src/main/java/img/img_3.png", 0, 100);
+        fisica = new Fisica(getHeight() - chaoAltura);
 
-        // Inicializa a física com a altura do chão
-        fisica = new Fisica(getHeight() - chaoAltura); // Cria um novo objeto Fisica usando a altura do painel menos a altura do chão
-
-        // Carrega a imagem de fundo usando o caminho relativo
+        // Carregar a imagem de fundo de forma mais segura
+        backgroundImage = Toolkit.getDefaultToolkit().getImage("src/main/java/img/wallpaper.jpg");
+        MediaTracker tracker = new MediaTracker(frame);
+        tracker.addImage(backgroundImage, 0);
         try {
-            backgroundImage = ImageIO.read(new File("src/main/java/img/wallpaper.jpg")); // Tenta ler a imagem do fundo
-        } catch (IOException e) {
-            e.printStackTrace(); // Imprime a pilha de erros se a leitura da imagem falhar
+            tracker.waitForAll();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
-        // Adiciona controles de teclado
-        frame.addKeyListener(new KeyAdapter() { // Adiciona um KeyAdapter para escutar eventos de teclado
+        // Inicializa os blocos
+        blocos = new ArrayList<>();
+        blocos.add(new Bloco(500, 900, 150, 20, Color.GREEN, null));
+        blocos.add(new Bloco(800, 650, 150, 20, Color.YELLOW, null));
+        blocos.add(new Bloco(500, 450, 150, 20, Color.YELLOW, null));
+        blocos.add(new Bloco(800, 150, 900, 20, Color.YELLOW, "src/main/java/img/img_9.png")); // Bloco com imagem
+
+        frame.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) { // Sobrescreve o método keyPressed para tratar eventos de tecla pressionada
-                switch (e.getKeyCode()) { // Verifica o código da tecla pressionada
-                    case KeyEvent.VK_RIGHT: // Se a tecla for a seta para a direita
-                        fisica.moverDireita(personagem); // Move o personagem para a direita
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_RIGHT:
+                        fisica.moverDireita(true);
+                        personagem.mover(5);
                         break;
-                    case KeyEvent.VK_LEFT: // Se a tecla for a seta para a esquerda
-                        fisica.moverEsquerda(personagem); // Move o personagem para a esquerda
+                    case KeyEvent.VK_LEFT:
+                        fisica.moverEsquerda(true);
+                        personagem.mover(-5);
                         break;
-                    case KeyEvent.VK_SPACE: // Se a tecla for a barra de espaço
-                        fisica.pular(); // Faz o personagem pular
+                    case KeyEvent.VK_SPACE:
+                        fisica.pular();
+                        break;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_RIGHT:
+                        fisica.moverDireita(false);
+                        break;
+                    case KeyEvent.VK_LEFT:
+                        fisica.moverEsquerda(false);
                         break;
                 }
             }
@@ -57,58 +75,64 @@ public class Tela extends JPanel implements Runnable { // Define a classe Tela q
     }
 
     @Override
-    protected void paintComponent(Graphics g) { // Sobrescreve o método paintComponent para desenhar no painel
-        super.paintComponent(g); // Chama o método da classe pai
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
-        // Desenha o background
-        if (backgroundImage != null) { // Verifica se a imagem de fundo foi carregada
-            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), null); // Desenha a imagem de fundo ocupando todo o painel
+        // Desenhar a imagem de fundo se carregada
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), null);
         }
 
-        // Desenha o chão
-       // g.setColor(Color.GREEN); // Define a cor para o chão
-        //g.fillRect(0, getHeight() - chaoAltura, getWidth(), chaoAltura); // Desenha um retângulo preto para representar o chão
+        // Desenhar os blocos
+        for (Bloco bloco : blocos) {
+            g.setColor(bloco.getCor());
+            g.fillRect(bloco.getX(), bloco.getY(), bloco.getLargura(), bloco.getAltura());
+        }
 
-        // Desenha o personagem
-        personagem.render(g); // Chama o método render do objeto Personagem para desenhar o personagem
+        // Renderizar o personagem
+        personagem.render(g);
 
-        // Desenha o FPS no canto superior direito
-        g.setColor(Color.BLACK); // Define a cor preta para o texto do FPS
-        g.setFont(new Font("Arial", Font.BOLD, 20)); // Define a fonte para o texto do FPS
-        g.drawString("FPS: " + fps, getWidth() - 100, 30); // Desenha a contagem de FPS no canto superior direito
+        // Verificar se o personagem completou o desafio
+        Bloco ultimoBloco = blocos.get(blocos.size() - 1);
+        if (personagem.getX() >= ultimoBloco.getX() && personagem.getX() <= ultimoBloco.getX() + ultimoBloco.getLargura()) {
+            g.setColor(Color.RED);
+            g.setFont(new Font("Arial", Font.BOLD, 30));
+            g.drawString("Parabéns! Você completou o desafio!", getWidth() / 2 - 200, getHeight() / 2);
+        }
+
+        // Exibir FPS
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("FPS: " + fps, getWidth() - 100, 30);
     }
 
     @Override
-    public void run() { // Implementa o método run da interface Runnable
-        long lastTime = System.currentTimeMillis(); // Armazena o tempo atual em milissegundos
-        int frames = 0; // Inicializa o contador de frames
-        long timer = System.currentTimeMillis(); // Armazena o tempo atual para controle de FPS
+    public void run() {
+        long lastTime = System.nanoTime();
+        int frames = 0;
+        long timer = System.currentTimeMillis();
 
-        while (true) { // Loop principal do jogo
-            // Aplica a física ao personagem (gravidade e colisão com o chão)
-            fisica.aplicarFisica(personagem); // Aplica a lógica de física ao personagem
+        while (true) {
+            fisica.aplicarFisica(personagem);
+            repaint();
 
-            // Atualiza a tela
-            repaint(); // Solicita a atualização do painel
-
-            // Controle de tempo para manter 60 FPS
-            frames++; // Incrementa o contador de frames
-            if (System.currentTimeMillis() - timer > 1000) { // Se passou um segundo
-                fps = frames; // Atualiza a contagem de FPS
-                frames = 0; // Reseta o contador de frames
-                timer += 1000; // Atualiza o timer para o próximo segundo
+            frames++;
+            if (System.currentTimeMillis() - timer >= 1000) {
+                fps = frames;
+                frames = 0;
+                timer += 1000;
             }
 
-            long now = System.currentTimeMillis(); // Armazena o tempo atual
-            long waitTime = 16 - (now - lastTime); // Calcula o tempo de espera para manter 60 FPS
-            lastTime = now; // Atualiza o último tempo registrado
+            long now = System.nanoTime();
+            long waitTime = (16_000_000 - (now - lastTime)) / 1_000_000; // Espera para 60 FPS
+            lastTime = now;
 
-            try {
-                if (waitTime > 0) { // Se o tempo de espera for positivo
-                    Thread.sleep(waitTime); // Aguarda o tempo de espera
+            if (waitTime > 0) {
+                try {
+                    Thread.sleep(waitTime);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace(); // Imprime a pilha de erros se a espera for interrompida
             }
         }
     }

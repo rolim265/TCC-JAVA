@@ -6,59 +6,70 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class Personagem { // Define a classe Personagem
-    private Image imagem; // Declara um objeto Image para armazenar a imagem do personagem
-    private int x, y; // Declara variáveis para armazenar a posição do personagem
+public class Personagem {
+    private Image imagemDireita;
+    private Image imagemEsquerda;
+    private int x, y, largura, altura;
+    private boolean indoDireita;
 
-    // Construtor do personagem
-    public Personagem(String caminhoImagem, int x, int y) {
-        this.x = x; // Inicializa a coordenada x do personagem
-        this.y = y; // Inicializa a coordenada y do personagem
+    public Personagem(String caminhoImagemDireita, String caminhoImagemEsquerda, int x, int y) {
+        this.x = x;
+        this.y = y;
+        carregarImagens(caminhoImagemDireita, caminhoImagemEsquerda);
+        this.indoDireita = true; // Inicialmente vai para a direita
+    }
 
-        // Carrega a imagem usando o caminho absoluto
+    private void carregarImagens(String caminhoImagemDireita, String caminhoImagemEsquerda) {
         try {
-            imagem = ImageIO.read(new File(caminhoImagem)); // Tenta ler a imagem do arquivo
-            if (imagem == null) { // Verifica se a imagem foi carregada corretamente
-                System.out.println("A imagem não pôde ser carregada: " + caminhoImagem); // Mensagem de erro
-            } else {
-                System.out.println("Imagem carregada com sucesso: " + caminhoImagem); // Mensagem de sucesso
-                System.out.println("Dimensões da imagem: " + imagem.getWidth(null) + "x" + imagem.getHeight(null)); // Exibe as dimensões da imagem
-            }
+            imagemDireita = ImageIO.read(new File(caminhoImagemDireita));
+            imagemEsquerda = ImageIO.read(new File(caminhoImagemEsquerda));
+            largura = imagemDireita.getWidth(null);
+            altura = imagemDireita.getHeight(null);
         } catch (IOException e) {
-            e.printStackTrace(); // Imprime a pilha de erros se a leitura da imagem falhar
-            System.out.println("Erro ao carregar a imagem: " + caminhoImagem); // Mensagem de erro
+            e.printStackTrace();
         }
     }
 
-    // Método para retornar a imagem carregada
-    public Image getImage() {
-        return imagem; // Retorna o objeto Image
-    }
-
-    // Desenha o personagem na tela
     public void render(Graphics g) {
-        if (imagem != null) { // Verifica se a imagem foi carregada
-            g.drawImage(imagem, x, y, null); // Desenha a imagem do personagem na posição (x, y)
-            System.out.println("Renderizando personagem na posição: (" + x + ", " + y + ")"); // Mensagem de depuração
+        // Desenha a imagem do personagem de acordo com a direção
+        if (indoDireita) {
+            g.drawImage(imagemDireita, x, y, null);
         } else {
-            System.out.println("A imagem do personagem não foi carregada, não é possível renderizar."); // Mensagem de erro se a imagem não for carregada
+            g.drawImage(imagemEsquerda, x, y, null);
         }
     }
 
-    // Getters e Setters para posição
+    public void mover(int deltaX) {
+        x += deltaX; // Mover horizontalmente
+        // Atualiza a direção do movimento
+        if (deltaX > 0) {
+            indoDireita = true; // Está indo para a direita
+        } else if (deltaX < 2) {
+            indoDireita = false; // Está indo para a esquerda
+        }
+    }
+
     public int getX() {
-        return x; // Retorna a coordenada x do personagem
+        return x;
     }
 
     public void setX(int x) {
-        this.x = x; // Define a coordenada x do personagem
+        this.x = x;
     }
 
     public int getY() {
-        return y; // Retorna a coordenada y do personagem
+        return y;
     }
 
     public void setY(int y) {
-        this.y = y; // Define a coordenada y do personagem
+        this.y = y;
+    }
+
+    public int getLargura() {
+        return largura;
+    }
+
+    public int getAltura() {
+        return altura;
     }
 }

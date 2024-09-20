@@ -1,55 +1,61 @@
 package org.example;
 
-public class Fisica { // Define a classe Fisica
-    private double velocidadeY = 0; // Velocidade vertical do personagem (para pular)
-    private double gravidade = 0.8; // Valor da gravidade
-    private double forcaPulo = -20; // Força do pulo (valor negativo para ir para cima)
-    private boolean noChao = true; // Verifica se o personagem está no chão
-    private int velocidadeX = 5; // Velocidade horizontal
-    private int alturaChao; // Altura do chão
+public class Fisica {
+    private double velocidadeY = 0;
+    private double gravidade = 0.7;
+    private double forcaPulo = -22; // Ajuste a força do pulo conforme necessário
+    private boolean noChao = true;
+    private int velocidadeX = 6;
+    private int alturaChao;
 
-    // Construtor da classe Fisica que recebe a altura do chão
+    private boolean movendoDireita = false;
+    private boolean movendoEsquerda = false;
+
     public Fisica(int alturaChao) {
-        this.alturaChao = alturaChao; // Inicializa a altura do chão
+        this.alturaChao = alturaChao;
     }
 
-    // Aplica a física de gravidade e movimento vertical
     public void aplicarFisica(Personagem personagem) {
-        // Se o personagem não estiver no chão, aplica a gravidade
-        if (!noChao) {
-            velocidadeY += gravidade; // Aumenta a velocidade vertical conforme a gravidade
+        // Aplicar movimento horizontal
+        if (movendoDireita) {
+            personagem.setX(personagem.getX() + velocidadeX);
+        }
+        if (movendoEsquerda) {
+            personagem.setX(personagem.getX() - velocidadeX);
         }
 
-        // Atualiza a posição vertical
+        // Aplicar física de pulo
+        if (!noChao) {
+            velocidadeY += gravidade; // Aplica gravidade quando não está no chão
+        }
+
+        // Atualiza a posição Y do personagem
         int novaY = personagem.getY() + (int) velocidadeY;
 
-        // Verifica se o personagem colidiu com o chão
+        // Verifica se o personagem atingiu o chão
         if (novaY >= alturaChao) {
-            novaY = alturaChao; // Coloca o personagem no chão
-            velocidadeY = 0; // Reseta a velocidade vertical
-            noChao = true; // O personagem está no chão
+            novaY = alturaChao;
+            velocidadeY = 0; // Reseta a velocidade Y
+            noChao = true; // O personagem agora está no chão
         } else {
             noChao = false; // O personagem não está no chão
         }
 
-        personagem.setY(novaY); // Atualiza a posição do personagem
+        personagem.setY(novaY); // Atualiza a posição Y
     }
 
-    // Método para fazer o personagem pular
     public void pular() {
-        if (noChao) { // Só permite pular se o personagem estiver no chão
-            velocidadeY = forcaPulo; // Define a velocidade inicial do pulo
+        if (noChao) { // Permite pular apenas se estiver no chão
+            velocidadeY = forcaPulo; // Aplica a força do pulo
             noChao = false; // O personagem não está mais no chão
         }
     }
 
-    // Movimento para a direita
-    public void moverDireita(Personagem personagem) {
-        personagem.setX(personagem.getX() + velocidadeX); // Move o personagem para a direita
+    public void moverDireita(boolean mover) {
+        movendoDireita = mover;
     }
 
-    // Movimento para a esquerda
-    public void moverEsquerda(Personagem personagem) {
-        personagem.setX(personagem.getX() - velocidadeX); // Move o personagem para a esquerda
+    public void moverEsquerda(boolean mover) {
+        movendoEsquerda = mover;
     }
 }
