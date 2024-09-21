@@ -9,12 +9,13 @@ import javax.imageio.ImageIO; // Importa a classe para leitura e escrita de imag
 // Classe que representa a tela de carregamento do jogo
 public class TelaCarregamento extends JPanel {
     private Image imagemCarregamento; // Imagem de carregamento
-    private int tempoRestante = 30; // 30 segundos para carregar
+    private int tempoRestante = 3; // 30 segundos para carregar
     private boolean jogoIniciado = false; // Verifica se o jogo já foi iniciado
 
     // Construtor da tela de carregamento
     public TelaCarregamento() {
         // Carrega a imagem de carregamento
+//        JOptionPane.showConfirmDialog(null, "Volta pra mim amandinha!", "Volta pra mim amandinha!", JOptionPane.WARNING_MESSAGE);
         try {
             imagemCarregamento = ImageIO.read(new File("src/main/java/img/img_1.png")); // Lê a imagem de carregamento
         } catch (IOException e) { // Captura exceções de entrada/saída
@@ -65,6 +66,7 @@ public class TelaCarregamento extends JPanel {
         Tela tela = new Tela(); // Cria a tela do jogo
         Thread gameThread = new Thread(tela); // Cria uma nova thread para o jogo
         gameThread.start(); // Inicia o loop do jogo
+
     }
 
     // Método principal para iniciar a tela de carregamento
